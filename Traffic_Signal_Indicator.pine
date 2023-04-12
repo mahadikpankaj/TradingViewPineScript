@@ -1,0 +1,48 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © mahadikpankaj
+
+//@version=5
+strategy(title="Traffic Light", shorttitle = "TL", overlay=true)
+
+var pair_found = false
+var high_max = 0.0
+var low_min = 0.0
+var pair_index = bar_index
+
+//check if Red-Green/Green-Red combination
+if ((open[0] < close[0] and open[1] > close[1]) or (open[1] < close[1] and open[0] > close[0])) and not pair_found
+    high_max := math.max(high[0], high[1])
+    low_min := math.min(low[0], low[1])
+    diff = high_max - low_min
+
+    if diff <= 100
+        pair_found := true
+        pair_index := bar_index[1]
+
+        label.new(x=bar_index[1], y=na, yloc=yloc.belowbar, text='1',size = size.small, color=color.gray, style=label.style_arrowup)
+        label.new(x=bar_index, y=na, yloc=yloc.belowbar, text='2',size = size.small, color=color.orange, style=label.style_arrowup)
+
+buy_breakout = false
+sell_breakout = false
+
+if pair_found
+//    label.new(x=bar_index, y=close, text="Here...", color=color.blue, textcolor=color.white)   
+    // message = "Low: " + str.tostring(low) + "\nhigh_max: " + str.tostring(high_max) + "\nhigh: " + str.tostring(high)
+    // label.new(x=bar_index, y=40700, text=message)
+    if open < high_max and high_max < close
+        
+        buy_breakout := true
+        stop_loss = low_min
+        label.new(x=bar_index, y=na, yloc=yloc.belowbar, text='BUY\nSL=' + str.tostring(low_min), color = color.green, textcolor = color.white, style=label.style_label_up)
+        pair_found := false
+    
+    else if open > low_min and low_min > close
+        sell_breakout := true
+        stop_loss = high_max
+        label.new(x=bar_index, y=na, yloc=yloc.abovebar, text='SELL\nSL=' + str.tostring(high_max),  color = color.red, textcolor = color.white, style=label.style_label_down)
+        pair_found := false
+
+// bar_pos = bar_index - pair_index
+// plotshape(buy_breakout or sell_breakout, style = shape.triangleup, size = size.tiny, color = color.orange, location = location.bottom, offset = bar_pos-7)       
+// plotshape(buy_breakout or sell_breakout, style = shape.triangleup, size = size.tiny, color = color.blue, location = location.bottom, offset = (bar_pos-6))    
+ 
